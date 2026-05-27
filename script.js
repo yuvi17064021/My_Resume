@@ -1,9 +1,10 @@
-// Portfolio interactions are intentionally lightweight and framework-free.
+// Lightweight portfolio interactions: no frameworks, no dependencies.
 (() => {
     "use strict";
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const header = document.querySelector("[data-header]");
+    const loader = document.querySelector("[data-loader]");
     const navToggle = document.querySelector("[data-nav-toggle]");
     const navMenu = document.querySelector("[data-nav-menu]");
     const navLinks = document.querySelectorAll("[data-nav-link]");
@@ -12,15 +13,29 @@
     const skillTags = document.querySelectorAll("[data-skill]");
     const counters = document.querySelectorAll("[data-count]");
     const printButtons = document.querySelectorAll("[data-print]");
+    const tiltCards = document.querySelectorAll("[data-tilt]");
     const currentYear = document.getElementById("current-year");
     const portraitImage = document.querySelector(".portrait-frame img");
 
-    // Keep the footer current without touching the markup every year.
+    document.body.classList.add("is-loading");
+
+    const hideLoader = () => {
+        if (!loader) {
+            document.body.classList.remove("is-loading");
+            return;
+        }
+        loader.classList.add("is-hidden");
+        document.body.classList.remove("is-loading");
+    };
+
+    window.addEventListener("load", () => window.setTimeout(hideLoader, 420));
+    window.setTimeout(hideLoader, 1300);
+
     if (currentYear) {
         currentYear.textContent = new Date().getFullYear().toString();
     }
 
-    // Hide a missing profile image and replace it with a clean monogram fallback.
+    // Missing profile images degrade into a polished monogram instead of a broken icon.
     if (portraitImage) {
         const handlePortraitError = () => {
             const frame = portraitImage.closest(".portrait-frame");
@@ -37,18 +52,15 @@
         }
     }
 
-    // Add a subtle header treatment after the user starts scrolling.
     const updateHeaderState = () => {
-        if (!header) {
-            return;
+        if (header) {
+            header.classList.toggle("is-scrolled", window.scrollY > 12);
         }
-        header.classList.toggle("is-scrolled", window.scrollY > 12);
     };
 
     updateHeaderState();
     window.addEventListener("scroll", updateHeaderState, { passive: true });
 
-    // Mobile navigation with accessible expanded state.
     const closeMenu = () => {
         if (!navToggle || !navMenu) {
             return;
@@ -72,7 +84,6 @@
         navToggle.addEventListener("click", toggleMenu);
     }
 
-    // Resume page print control uses the browser's native print pipeline.
     printButtons.forEach((button) => {
         button.addEventListener("click", () => window.print());
     });
@@ -83,7 +94,6 @@
         }
     });
 
-    // Smooth anchor scrolling while preserving reduced-motion preferences.
     navLinks.forEach((link) => {
         link.addEventListener("click", (event) => {
             const href = link.getAttribute("href");
@@ -106,7 +116,6 @@
         });
     });
 
-    // Reveal sections as they enter the viewport for a refined, non-flashy feel.
     if ("IntersectionObserver" in window && !prefersReducedMotion) {
         const revealObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach((entry) => {
@@ -122,21 +131,19 @@
         });
 
         revealItems.forEach((item, index) => {
-            item.style.setProperty("--reveal-delay", `${Math.min(index * 35, 260)}ms`);
+            item.style.setProperty("--reveal-delay", `${Math.min(index * 34, 260)}ms`);
             revealObserver.observe(item);
         });
 
-        // Fail-safe: content should never stay hidden if observer callbacks are delayed.
         window.setTimeout(() => {
             revealItems.forEach((item) => item.classList.add("is-visible"));
-        }, 1400);
+        }, 1500);
     } else {
         revealItems.forEach((item) => item.classList.add("is-visible"));
     }
 
-    // Skill tags animate independently so the skills section feels responsive and alive.
     skillTags.forEach((tag, index) => {
-        tag.style.setProperty("--delay", `${(index % 12) * 45}ms`);
+        tag.style.setProperty("--delay", `${(index % 12) * 42}ms`);
     });
 
     if ("IntersectionObserver" in window && !prefersReducedMotion) {
@@ -148,13 +155,10 @@
                 entry.target.classList.add("is-visible");
                 observer.unobserve(entry.target);
             });
-        }, {
-            threshold: 0.25
-        });
+        }, { threshold: 0.22 });
 
         skillTags.forEach((tag) => skillObserver.observe(tag));
 
-        // Fail-safe for browsers or embedded previews with unreliable observer callbacks.
         window.setTimeout(() => {
             skillTags.forEach((tag) => tag.classList.add("is-visible"));
         }, 1600);
@@ -162,7 +166,6 @@
         skillTags.forEach((tag) => tag.classList.add("is-visible"));
     }
 
-    // Animated metrics add polish without introducing heavy dependencies.
     const formatNumber = (value, decimals) => {
         if (decimals > 0) {
             return value.toFixed(decimals);
@@ -200,9 +203,7 @@
                 animateCounter(entry.target);
                 observer.unobserve(entry.target);
             });
-        }, {
-            threshold: 0.8
-        });
+        }, { threshold: 0.75 });
 
         counters.forEach((counter) => counterObserver.observe(counter));
     } else {
@@ -212,7 +213,6 @@
         });
     }
 
-    // Highlight the active section in the sticky navigation.
     if ("IntersectionObserver" in window && sections.length > 0) {
         const sectionObserver = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
@@ -232,4 +232,151 @@
 
         sections.forEach((section) => sectionObserver.observe(section));
     }
+
+    // Premium but restrained card tilt, disabled on touch/coarse pointers.
+    if (!prefersReducedMotion && window.matchMedia("(pointer: fine)").matches) {
+        tiltCards.forEach((card) => {
+            card.addEventListener("mousemove", (event) => {
+                const rect = card.getBoundingClientRect();
+                const x = (event.clientX - rect.left) / rect.width - 0.5;
+                const y = (event.clientY - rect.top) / rect.height - 0.5;
+                card.style.setProperty("--tilt-y", `${x * 2.8}deg`);
+                card.style.setProperty("--tilt-x", `${y * -2.8}deg`);
+            });
+
+            card.addEventListener("mouseleave", () => {
+                card.style.setProperty("--tilt-y", "0deg");
+                card.style.setProperty("--tilt-x", "0deg");
+            });
+        });
+    }
+
+    // Canvas visual: stochastic paths, Gaussian curve, particles, and data-flow lines.
+    const canvas = document.getElementById("quant-canvas");
+    if (!canvas || prefersReducedMotion) {
+        return;
+    }
+
+    const context = canvas.getContext("2d", { alpha: true });
+    if (!context) {
+        return;
+    }
+
+    let width = 0;
+    let height = 0;
+    let dpr = 1;
+    let particles = [];
+    let mouseX = 0;
+    let mouseY = 0;
+
+    const resizeCanvas = () => {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        context.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const count = Math.min(54, Math.max(26, Math.floor(width / 32)));
+        particles = Array.from({ length: count }, (_, index) => ({
+            x: (index * 97) % width,
+            y: (index * 53) % height,
+            vx: 0.08 + (index % 5) * 0.018,
+            vy: 0.05 + (index % 7) * 0.012,
+            r: 0.7 + (index % 4) * 0.28
+        }));
+    };
+
+    const drawPath = (time, baseY, amplitude, color, phase) => {
+        context.beginPath();
+        for (let x = 0; x <= width; x += 14) {
+            const t = x / width;
+            const y = baseY
+                + Math.sin(t * Math.PI * 4 + time * 0.001 + phase) * amplitude
+                + Math.sin(t * Math.PI * 9 + time * 0.0007 + phase) * amplitude * 0.35;
+            if (x === 0) {
+                context.moveTo(x, y);
+            } else {
+                context.lineTo(x, y);
+            }
+        }
+        context.strokeStyle = color;
+        context.lineWidth = 1;
+        context.stroke();
+    };
+
+    const drawGaussian = (time) => {
+        const centerX = width * 0.76 + mouseX * 10;
+        const centerY = height * 0.24 + mouseY * 8;
+        const sigma = Math.max(64, width * 0.08);
+        const scale = Math.min(96, height * 0.11);
+
+        context.beginPath();
+        for (let i = -150; i <= 150; i += 5) {
+            const x = centerX + i;
+            const density = Math.exp(-(i * i) / (2 * sigma * sigma));
+            const y = centerY + scale - density * scale * (0.88 + Math.sin(time * 0.001) * 0.05);
+            if (i === -150) {
+                context.moveTo(x, y);
+            } else {
+                context.lineTo(x, y);
+            }
+        }
+        context.strokeStyle = "rgba(245, 208, 111, 0.28)";
+        context.lineWidth = 1.2;
+        context.stroke();
+    };
+
+    const drawParticles = () => {
+        particles.forEach((particle, index) => {
+            particle.x += particle.vx;
+            particle.y += particle.vy;
+
+            if (particle.x > width + 20) particle.x = -20;
+            if (particle.y > height + 20) particle.y = -20;
+
+            const px = particle.x + mouseX * (index % 5) * 4;
+            const py = particle.y + mouseY * (index % 7) * 3;
+
+            context.beginPath();
+            context.arc(px, py, particle.r, 0, Math.PI * 2);
+            context.fillStyle = index % 4 === 0 ? "rgba(245, 208, 111, 0.22)" : "rgba(110, 231, 200, 0.20)";
+            context.fill();
+
+            for (let j = index + 1; j < particles.length; j += 1) {
+                const other = particles[j];
+                const dx = particle.x - other.x;
+                const dy = particle.y - other.y;
+                const dist = Math.hypot(dx, dy);
+                if (dist < 92) {
+                    context.beginPath();
+                    context.moveTo(px, py);
+                    context.lineTo(other.x + mouseX * (j % 5) * 4, other.y + mouseY * (j % 7) * 3);
+                    context.strokeStyle = `rgba(143, 183, 255, ${0.06 * (1 - dist / 92)})`;
+                    context.lineWidth = 1;
+                    context.stroke();
+                }
+            }
+        });
+    };
+
+    const render = (time) => {
+        context.clearRect(0, 0, width, height);
+        drawPath(time, height * 0.68 + mouseY * 12, 28, "rgba(110, 231, 200, 0.18)", 0.2);
+        drawPath(time, height * 0.74 - mouseY * 8, 20, "rgba(143, 183, 255, 0.13)", 1.7);
+        drawGaussian(time);
+        drawParticles();
+        requestAnimationFrame(render);
+    };
+
+    window.addEventListener("resize", resizeCanvas, { passive: true });
+    window.addEventListener("mousemove", (event) => {
+        mouseX = (event.clientX / window.innerWidth - 0.5) * 2;
+        mouseY = (event.clientY / window.innerHeight - 0.5) * 2;
+    }, { passive: true });
+
+    resizeCanvas();
+    requestAnimationFrame(render);
 })();
