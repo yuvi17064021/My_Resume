@@ -11,6 +11,7 @@
     const revealItems = document.querySelectorAll("[data-reveal]");
     const skillTags = document.querySelectorAll("[data-skill]");
     const counters = document.querySelectorAll("[data-count]");
+    const printButtons = document.querySelectorAll("[data-print]");
     const currentYear = document.getElementById("current-year");
     const portraitImage = document.querySelector(".portrait-frame img");
 
@@ -70,6 +71,11 @@
     if (navToggle) {
         navToggle.addEventListener("click", toggleMenu);
     }
+
+    // Resume page print control uses the browser's native print pipeline.
+    printButtons.forEach((button) => {
+        button.addEventListener("click", () => window.print());
+    });
 
     document.addEventListener("keydown", (event) => {
         if (event.key === "Escape") {
