@@ -44,7 +44,6 @@ GitHub: https://github.com/yuvi17064021/Blast-GNN-surrogate-model
 # Trading Competitions & Quantitative Projects
 
 ## IMC Trading | Prosperity 4 Algorithmic & Manual Trading Challenge  
-*Global Competition | Rank 14 / 18,000+ Teams*  
 GitHub: https://github.com/yuvi17064021/IMC-Prosperity-4
 
 - Designed and implemented modular algorithmic trading systems across simulated multi-asset markets using Python, including mean-reversion, market-making, pairs trading, lead–lag prediction, lattice-reversal, and directional leverage strategies under strict inventory and execution constraints.
